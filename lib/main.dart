@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter Demo CRUD'),
     );
   }
 }
@@ -44,6 +44,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   List<User> users = [];
+
   @override
   void initState() {
     super.initState();
@@ -57,44 +58,30 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextButton(
-                  child: Text("Create"),
-                  onPressed: _create,
-                ),
-                TextButton(
-                  child: Text("Read"),
-                  onPressed: _read,
-                ),
-              ],
-            ),
-            Expanded(
-              child: ListView.separated(
-                itemBuilder: (context, index) {
-                  return Dismissible(
-                    onDismissed: (val) {
-                      _delete("${users[index].id}");
-                    },
-                    key: Key("${users[index].id}"),
-                    child: ListTile(
-                      title: Text(
-                          "${users[index].firstName} ${users[index].lastName}"),
-                      trailing: TextButton(
-                        child: Text("Update"),
-                        onPressed: () => _update(users[index].id.toString()),
-                      ),
-                    ),
-                  );
-                },
-                separatorBuilder: (context, index) => Divider(),
-                itemCount: users.length,
+        child: ListView.separated(
+          itemBuilder: (context, index) {
+            return Dismissible(
+              background: Container(
+                width: double.infinity,
+                color: Colors.red,
               ),
-            )
-          ],
+              direction: DismissDirection.endToStart,
+              onDismissed: (val) {
+                _delete("${users[index].id}");
+              },
+              key: Key("${users[index].id}"),
+              child: ListTile(
+                title:
+                    Text("${users[index].firstName} ${users[index].lastName}"),
+                trailing: TextButton(
+                  child: Text("Update"),
+                  onPressed: () => _update(users[index].id.toString()),
+                ),
+              ),
+            );
+          },
+          separatorBuilder: (context, index) => Divider(),
+          itemCount: users.length,
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -137,11 +124,11 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       users.clear();
       var usersData = await firestore.collection('users').get();
-      usersData.docs.forEach((element) {
-        var data = element.data();
+      usersData.docs.forEach((document) {
+        var data = document.data();
         setState(() {
           users.add(User(
-            id: element.id,
+            id: document.id,
             firstName: data['first_name'],
             lastName: data['last_name'],
           ));
